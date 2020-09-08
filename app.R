@@ -1,0 +1,35 @@
+##ShinyApp_Generating random values and show graph (08.09.2020)
+
+ui <- fluidPage(
+  headerPanel("Generate Normal Distribution"),
+  sidebarPanel(
+    h3(p("Please select a sample size, mean and standard deviation.")),
+    br(),
+    numericInput("n", "n", 30),
+    br(),
+    numericInput("m", "Mean", 0),
+    br(),
+    numericInput("s", "Standard Deviation", 1),
+    br(),
+    actionButton("go", h5("Show Graph"))),
+  mainPanel(plotOutput("plot"))
+)
+
+server <- function(input, output){
+  rand <- eventReactive(input$go, {
+    rnorm(input$n, input$m, input$s)
+  })
+  output$plot <- renderPlot({
+    hist(rand(), col = "grey", freq = FALSE, xlab = "Random Values", main = "")
+    curve(dnorm(x, input$m, input$s), lwd = 2, lty = 2, col = "red", add = TRUE)
+    legend("topright", bty = "n", paste(
+      "n =", length(rand()), "\n",
+      "mean =", round(mean(rand()), 2), "\n", 
+      "sd =", round(sd(rand()), 2), "\n",
+      "skew = ", round(sum((rand() - mean(rand()))^3)/(length(rand())*sd(rand())^4), 2), "\n",
+      "kurt = ", round(sum((rand() - mean(rand()))^4)/(length(rand())*sd(rand())^4)- 3, 2))
+     )
+  })
+}
+
+shinyApp(ui, server)
